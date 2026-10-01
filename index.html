@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Petualangan Pelajar Pancasila - Game Edukasi Kelas VII</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top, #1e3a8a 0%, #0f172a 100%);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.97);
+            backdrop-filter: blur(16px);
+            border-radius: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .btn-bounce {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .btn-bounce:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.3);
+        }
+        .btn-bounce:active {
+            transform: translateY(1px) scale(0.98);
+        }
+        @keyframes pulse-glow {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 12px rgba(234, 179, 8, 0.7)); }
+            50% { transform: scale(1.06); filter: drop-shadow(0 0 24px rgba(234, 179, 8, 0.95)); }
+        }
+        .garuda-glow {
+            animation: pulse-glow 2.8s infinite ease-in-out;
+        }
+        @keyframes timer-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .timer-warning {
+            animation: timer-pulse 0.5s infinite ease-in-out;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-2 sm:p-4 text-gray-800 min-h-screen">
+
+    <div class="w-full max-w-4xl glass-card overflow-hidden my-auto border-4 border-yellow-400 relative">
+        
+        <!-- Header Game -->
+        <header class="bg-gradient-to-r from-red-700 via-red-600 to-red-800 text-white p-4 text-center relative shadow-lg">
+            <div class="flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
+                <div class="flex items-center gap-2">
+                    <div class="bg-yellow-400 text-red-900 font-extrabold text-xs px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1 shadow">
+                        <i class="fas fa-certificate"></i> Kelas VII (Fase D)
+                    </div>
+                    <!-- Timer Badge -->
+                    <span id="timer-badge" class="hidden font-bold text-xs bg-red-950/80 text-yellow-300 px-3 py-1 rounded-full border border-yellow-400/50 flex items-center gap-1.5 shadow">
+                        <i class="fas fa-clock text-yellow-400" id="timer-icon"></i>
+                        <span><span id="timer-val">20</span>s</span>
+                    </span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <!-- Highscore & Sound Controls -->
+                    <button id="sound-btn" onclick="toggleSound()" class="bg-red-900/60 hover:bg-red-900 text-yellow-300 px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 border border-yellow-400/30">
+                        <i id="sound-icon" class="fas fa-volume-high"></i> <span id="sound-text" class="hidden sm:inline">Suara</span>
+                    </button>
+
+                    <!-- Combo Streak Badge -->
+                    <span id="streak-badge" class="hidden font-extrabold text-xs bg-amber-400 text-amber-950 px-2.5 py-1 rounded-lg border border-yellow-200 animate-bounce">
+                        <i class="fas fa-fire text-orange-600 mr-1"></i>Combo x<span id="streak-val">0</span>
+                    </span>
+
+                    <!-- Score display -->
+                    <span class="font-black text-yellow-300 text-sm sm:text-base bg-red-900/90 px-3.5 py-1 rounded-lg border border-yellow-400/40 flex items-center shadow-inner">
+                        <i class="fas fa-star text-yellow-400 mr-1.5 text-base"></i>Skor: <span id="current-score" class="ml-1 text-white">0</span>
+                    </span>
+                </div>
+            </div>
+
+            <h1 class="text-xl sm:text-3xl font-black mt-2 tracking-wide text-yellow-300 drop-shadow-md">
+                PETUALANGAN PELAJAR PANCASILA
+            </h1>
+            <p class="text-xs sm:text-sm text-red-100 font-medium">Media Pembelajaran Interaktif Nilai Pancasila & Norma Masyarakat</p>
+        </header>
+
+        <!-- Dynamic Content Screen -->
+        <main id="game-screen" class="p-4 sm:p-8 min-h-[480px] flex flex-col justify-center relative">
+            
+            <div id="menu-screen" class="space-y-6 text-center">
+                <div class="flex justify-center mb-1">
+                    <div class="w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-tr from-red-600 to-yellow-500 rounded-full flex items-center justify-center border-4 border-yellow-300 garuda-glow shadow-xl">
+                        <i class="fas fa-shield-halved text-white text-5xl sm:text-6xl drop-shadow"></i>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-2xl font-black text-gray-800">Selamat Datang, Pelajar Pancasila! 🇮🇩</h2>
+                    <p class="text-gray-600 text-xs sm:text-sm mt-1 max-w-lg mx-auto">
+                        Uji pemahamanmu tentang <strong>Nilai Pancasila</strong> dan <strong>Norma Masyarakat</strong> lewat 3 tantangan interaktif di bawah ini!
+                    </p>
+                </div>
+
+                <!-- Input Nama Siswa & Pengaturan Mode Timer -->
+                <div class="max-w-md mx-auto bg-slate-50 p-4 rounded-2xl border border-gray-200 shadow-inner space-y-3">
+                    <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-gray-300">
+                        <i class="fas fa-user-graduate text-red-600"></i>
+                        <input type="text" id="player-name" placeholder="Masukkan Nama Lengkapmu..." class="w-full text-xs sm:text-sm outline-none font-semibold text-gray-700 bg-transparent" value="Siswa Hebat">
+                    </div>
+
+                    <!-- Mode Timer Selection -->
+                    <div class="space-y-1">
+                        <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wider text-left">Pilih Mode Permainan:</p>
+                        <div class="grid grid-cols-3 gap-2 text-xs font-bold text-gray-700">
+                            <label class="cursor-pointer border-2 border-gray-200 rounded-xl p-2 text-center hover:bg-white transition flex flex-col items-center gap-1 has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50/60 has-[:checked]:text-blue-900">
+                                <input type="radio" name="game-mode" value="santai" checked class="hidden">
+                                <i class="fas fa-mug-hot text-amber-600 text-sm"></i>
+                                <span class="text-[11px]">Santai</span>
+                                <span class="text-[9px] text-gray-400 font-normal">Tanpa Timer</span>
+                            </label>
+                            
+                            <label class="cursor-pointer border-2 border-gray-200 rounded-xl p-2 text-center hover:bg-white transition flex flex-col items-center gap-1 has-[:checked]:border-yellow-500 has-[:checked]:bg-yellow-50/60 has-[:checked]:text-amber-900">
+                                <input type="radio" name="game-mode" value="standar" class="hidden">
+                                <i class="fas fa-stopwatch text-yellow-600 text-sm"></i>
+                                <span class="text-[11px]">Standar</span>
+                                <span class="text-[9px] text-gray-400 font-normal">20s / Soal</span>
+                            </label>
+
+                            <label class="cursor-pointer border-2 border-gray-200 rounded-xl p-2 text-center hover:bg-white transition flex flex-col items-center gap-1 has-[:checked]:border-red-600 has-[:checked]:bg-red-50/60 has-[:checked]:text-red-900">
+                                <input type="radio" name="game-mode" value="cepat" class="hidden">
+                                <i class="fas fa-bolt text-red-600 text-sm animate-bounce"></i>
+                                <span class="text-[11px]">Tantangan</span>
+                                <span class="text-[9px] text-gray-400 font-normal">10s (Skor x1.5)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modul Permainan -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+                    <!-- Game 1 -->
+                    <button onclick="startQuizGame()" class="btn-bounce bg-gradient-to-br from-indigo-600 to-blue-700 text-white p-4 rounded-2xl text-left border-b-4 border-indigo-900 shadow-lg flex flex-col justify-between group">
+                        <div>
+                            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition">
+                                <i class="fas fa-brain text-yellow-300"></i>
+                            </div>
+                            <h3 class="font-bold text-base">Cerdas Cermat</h3>
+                            <p class="text-xs text-indigo-100 mt-1">10 Soal Kuis HOTS & Kasus Bab 2 & 3</p>
+                        </div>
+                        <span class="mt-4 inline-flex items-center justify-center bg-white text-indigo-800 font-bold text-xs py-2 px-3 rounded-xl shadow">
+                            Mulai Kuis <i class="fas fa-play ml-1.5 text-xs"></i>
+                        </span>
+                    </button>
+
+                    <!-- Game 2 -->
+                    <button onclick="startSortingGame()" class="btn-bounce bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-4 rounded-2xl text-left border-b-4 border-teal-900 shadow-lg flex flex-col justify-between group">
+                        <div>
+                            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition">
+                                <i class="fas fa-user-shield text-yellow-300"></i>
+                            </div>
+                            <h3 class="font-bold text-base">Detektif Norma</h3>
+                            <p class="text-xs text-emerald-100 mt-1">10 Studi Kasus Norma Masyarakat</p>
+                        </div>
+                        <span class="mt-4 inline-flex items-center justify-center bg-white text-emerald-800 font-bold text-xs py-2 px-3 rounded-xl shadow">
+                            Mulai Misi <i class="fas fa-play ml-1.5 text-xs"></i>
+                        </span>
+                    </button>
+
+                    <!-- Game 3 -->
+                    <button onclick="startSilaMatchGame()" class="btn-bounce bg-gradient-to-br from-amber-500 to-orange-600 text-white p-4 rounded-2xl text-left border-b-4 border-orange-800 shadow-lg flex flex-col justify-between group">
+                        <div>
+                            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition">
+                                <i class="fas fa-shapes text-yellow-200"></i>
+                            </div>
+                            <h3 class="font-bold text-base">Cocok Sila</h3>
+                            <p class="text-xs text-amber-100 mt-1">Jodohkan Sila & Pengamalan Nyata</p>
+                        </div>
+                        <span class="mt-4 inline-flex items-center justify-center bg-white text-orange-800 font-bold text-xs py-2 px-3 rounded-xl shadow">
+                            Mainkan <i class="fas fa-play ml-1.5 text-xs"></i>
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ACTIVE GAME VIEWPORT -->
+            <div id="active-game-area" class="hidden relative"></div>
+
+            <!-- RESULT SCREEN -->
+            <div id="result-screen" class="hidden text-center space-y-5 my-auto">
+                <div class="w-20 h-20 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mx-auto text-4xl border-4 border-yellow-400 animate-bounce shadow-lg">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-black text-gray-800">Laporan Hasil Belajar 🎉</h2>
+                    <p class="text-xs sm:text-sm text-gray-600 mt-0.5">Luar biasa! Kamu telah menyelesaikan tantangan pembelajaran.</p>
+                </div>
+
+                <!-- Kartu Hasil Ringkasan -->
+                <div class="bg-slate-50 border-2 border-dashed border-gray-300 p-5 rounded-2xl max-w-lg mx-auto text-left space-y-3 shadow-sm">
+                    <div class="flex justify-between items-center border-b pb-3">
+                        <div>
+                            <p class="text-xs text-gray-400 font-bold uppercase">Nama Siswa</p>
+                            <p id="res-player-name" class="font-extrabold text-base text-gray-800">Siswa</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs text-gray-400 font-bold uppercase">Total Skor Akhir</p>
+                            <p id="final-score-val" class="text-3xl font-black text-red-600">0</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-center text-xs py-1">
+                        <div class="bg-white p-2 rounded-xl border border-gray-200">
+                            <p class="text-gray-400 font-semibold">Predikat Kelulusan</p>
+                            <p id="res-predikat" class="font-extrabold text-emerald-600 text-sm">Sangat Baik (A)</p>
+                        </div>
+                        <div class="bg-white p-2 rounded-xl border border-gray-200">
+                            <p class="text-gray-400 font-semibold">Akurasi Jawaban</p>
+                            <p id="res-accuracy" class="font-extrabold text-indigo-600 text-sm">100%</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="text-xs text-gray-400 font-bold uppercase mb-1">Catatan Evaluasi Guru</p>
+                        <p id="final-eval-text" class="text-xs sm:text-sm font-medium text-gray-700 bg-white p-3 rounded-xl border border-gray-200 leading-relaxed">
+                            Tetap semangat mempelajari dan mengamalkan nilai-nilai Pancasila serta norma dalam kehidupan sehari-hari!
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex justify-center gap-3 flex-wrap">
+                    <button onclick="copyResultToClipboard()" class="btn-bounce bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs sm:text-sm shadow flex items-center gap-2">
+                        <i class="fas fa-copy"></i> Salin Laporan Guru
+                    </button>
+                    <button onclick="showMenu()" class="btn-bounce bg-gray-800 hover:bg-gray-900 text-white font-bold px-6 py-2.5 rounded-xl text-xs sm:text-sm shadow flex items-center gap-2">
+                        <i class="fas fa-house"></i> Menu Utama
+                    </button>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Footer Info -->
+        <footer class="bg-slate-100 p-3 text-center border-t border-gray-200 text-xs text-gray-500 flex justify-between items-center px-6">
+            <span class="font-medium"><i class="fas fa-book mr-1 text-red-600"></i>Pendidikan Pancasila SMP/MTs</span>
+            <span class="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full text-[10px]">
+                <i class="fas fa-wifi mr-1"></i>Offline Ready
+            </span>
+        </footer>
+
+    </div>
+
+    <!-- SCRIPT GAMING & AUDIO LOGIC -->
+    <script>
+        let audioCtx = null;
+        let soundEnabled = true;
+        let totalScore = 0;
+        let comboStreak = 0;
+        let timerInterval = null;
+        let timeLeft = 20;
+        let totalQuestionsAnswered = 0;
+        let totalQuestionsCorrect = 0;
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                    audioCtx = new AudioContextClass();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                initAudio();
+                if (!audioCtx) return;
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(450, now);
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.06);
+                    osc.start(now);
+                    osc.stop(now + 0.06);
+                } else if (type === 'correct') {
+                    // Arpeggio C Major
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.07); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.14); // G5
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now); // A3
+                    osc.frequency.setValueAtTime(174.61, now + 0.12); // F3
+                    gain.gain.setValueAtTime(0.22, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.32);
+                    osc.start(now);
+                    osc.stop(now + 0.32);
+                } else if (type === 'tick') {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(800, now);
+                    gain.gain.setValueAtTime(0.05, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+                    osc.start(now);
+                    osc.stop(now + 0.03);
+                } else if (type === 'win') {
+                    // Triumph Fanfare
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.12); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.24); // G5
+                    osc.frequency.setValueAtTime(1046.50, now + 0.36); // C6
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.7);
+                    osc.start(now);
+                    osc.stop(now + 0.7);
+                }
+            } catch(e) { console.log('Audio init prevented', e); }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('sound-icon');
+            const text = document.getElementById('sound-text');
+            if (soundEnabled) {
+                icon.className = 'fas fa-volume-high';
+                text.innerText = 'Suara';
+                playSound('click');
+            } else {
+                icon.className = 'fas fa-volume-xmark';
+                text.innerText = 'Mute';
+            }
+        }
+
+        function getSelectedMode() {
+            const modes = document.getElementsByName('game-mode');
+            for (let m of modes) {
+                if (m.checked) return m.value;
+            }
+            return 'santai';
+        }
+
+        function getScoreMultiplier() {
+            const mode = getSelectedMode();
+            if (mode === 'cepat') return 1.5;
+            return 1;
+        }
+
+        function updateScore(points) {
+            const finalPoints = Math.round(points * getScoreMultiplier());
+            totalScore += finalPoints;
+            document.getElementById('current-score').innerText = totalScore;
+        }
+
+        function updateStreak(isCorrect) {
+            const badge = document.getElementById('streak-badge');
+            const valDisplay = document.getElementById('streak-val');
+            
+            if (isCorrect) {
+                comboStreak++;
+                if (comboStreak >= 2) {
+                    badge.classList.remove('hidden');
+                    valDisplay.innerText = comboStreak;
+                    // Bonus combo point
+                    updateScore(5);
+                }
+            } else {
+                comboStreak = 0;
+                badge.classList.add('hidden');
+            }
+        }
+
+        function getPlayerName() {
+            const input = document.getElementById('player-name').value.trim();
+            return input || "Pelajar Pancasila";
+        }
+
+        function startTimer(seconds, onTimeUp) {
+            stopTimer();
+            const mode = getSelectedMode();
+            
+            if (mode === 'santai') {
+                document.getElementById('timer-badge').classList.add('hidden');
+                return;
+            }
+
+            // Adjust seconds based on mode
+            let targetSeconds = mode === 'cepat' ? 10 : seconds;
+            timeLeft = targetSeconds;
+
+            const badge = document.getElementById('timer-badge');
+            const valDisplay = document.getElementById('timer-val');
+            const icon = document.getElementById('timer-icon');
+            
+            badge.classList.remove('hidden', 'bg-red-600', 'timer-warning');
+            badge.classList.add('bg-red-950/80');
+            valDisplay.innerText = timeLeft;
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                valDisplay.innerText = timeLeft;
+
+                if (timeLeft <= 5 && timeLeft > 0) {
+                    badge.classList.add('timer-warning', 'bg-red-600');
+                    playSound('tick');
+                }
+
+                if (timeLeft <= 0) {
+                    stopTimer();
+                    playSound('wrong');
+                    onTimeUp();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            document.getElementById('timer-badge').classList.add('hidden');
+        }
+
+        function showMenu() {
+            playSound('click');
+            stopTimer();
+            comboStreak = 0;
+            document.getElementById('streak-badge').classList.add('hidden');
+            document.getElementById('menu-screen').classList.remove('hidden');
+            document.getElementById('active-game-area').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('active-game-area').innerHTML = '';
+        }
+
+        function showResult(gameScore, title, evalMessage) {
+            stopTimer();
+            playSound('win');
+            document.getElementById('menu-screen').classList.add('hidden');
+            document.getElementById('active-game-area').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            
+            document.getElementById('res-player-name').innerText = getPlayerName();
+            document.getElementById('final-score-val').innerText = totalScore;
+            
+            const accuracy = totalQuestionsAnswered > 0 ? Math.round((totalQuestionsCorrect / totalQuestionsAnswered) * 100) : 100;
+            document.getElementById('res-accuracy').innerText = `${accuracy}%`;
+
+            let predikat = "Sangat Baik (A)";
+            if (totalScore < 80) predikat = "Cukup / Perlu Bimbingan (C)";
+            else if (totalScore < 140) predikat = "Baik (B)";
+            
+            document.getElementById('res-predikat').innerText = predikat;
+
+            let fullEval = `[Tantangan: ${title}]\nMode: ${getSelectedMode().toUpperCase()}\n\n${evalMessage}\n\nPredikat Hasil: ${predikat} (Akurasi: ${accuracy}%).`;
+            document.getElementById('final-eval-text').innerText = fullEval;
+        }
+
+        function copyResultToClipboard() {
+            playSound('click');
+            const name = getPlayerName();
+            const textToCopy = `=== LAPORAN HASIL BELAJAR PENDIDIKAN PANCASILA ===\nNama Siswa : ${name}\nTotal Skor  : ${totalScore}\nMode Game   : ${getSelectedMode().toUpperCase()}\nCatatan Evaluasi Guru:\n${document.getElementById('final-eval-text').innerText}\n=================================================`;
+            
+            const tempInput = document.createElement('textarea');
+            tempInput.value = textToCopy;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            alert('✅ Laporan hasil belajar berhasil disalin ke clipboard! Siap dikirim ke Guru.');
+        }
+
+        /* ==========================================================
+           GAME 1: CERDAS CERMAT (KUIS HOTS & KASUS NYATA - 10 SOAL)
+        ========================================================== */
+        const quizQuestions = [
+            {
+                q: "Drs. Mohammad Hatta mengusulkan perubahan rumusan sila pertama Piagam Jakarta demi menjaga persatuan bangsa Indonesia yang beragam. Nilai utama pendiri bangsa yang patut diteladani adalah...",
+                options: [
+                    "Mengutamakan kepentingan kelompok sendiri",
+                    "Mengedepankan toleransi dan persatuan nasional di atas golongan",
+                    "Mempertahankan ego pribadi tanpa kompromi",
+                    "Menolak keberagaman adat dan agama"
+                ],
+                ans: 1,
+                explanation: "Para pendiri bangsa berjiwa besar mengedepankan keutuhan NKRI dan toleransi antarumat beragama."
+            },
+            {
+                q: "Seorang ibu memberikan uang saku Rp25.000 kepada anak SMA dan Rp10.000 kepada anak SD. Tindakan ini mencerminkan makna Keadilan Sosial (Sila ke-5), yaitu...",
+                options: [
+                    "Mendapatkan hak dalam jumlah nominal yang wajib persis sama",
+                    "Mendapatkan hak secara proporsional sesuai kebutuhan nyata",
+                    "Memberikan kebebasan tanpa batas bagi yang lebih tua",
+                    "Menghapus kewajiban anggota keluarga"
+                ],
+                ans: 1,
+                explanation: "Adil dalam Pancasila berarti proporsional: memberikan hak sesuai kebutuhan dan porsinya masing-masing."
+            },
+            {
+                q: "Ketika melewati kerumunan orang tua yang sedang duduk di teras warga, perilaku yang mencerminkan Norma Kesopanan adalah...",
+                options: [
+                    "Berlari kencang sambil berteriak",
+                    "Membungkukkan badan sedikit, berjalan pelan, dan mengucap 'Permisi'",
+                    "Ikut berbicara keras-keras tanpa dipanggil",
+                    "Menyuruh mereka pindah tempat"
+                ],
+                ans: 1,
+                explanation: "Membungkukkan badan dan meminta izin saat lewat adalah etika dan norma kesopanan ketimuran yang luhur."
+            },
+            {
+                q: "Norma Hukum bersifat tegas dan memaksa. Ciri utama sanksi pelanggaran norma hukum di Indonesia adalah...",
+                options: [
+                    "Berupa rasa bersalah dan penyesalan mendalam dari hati",
+                    "Berupa ejekan atau cemoohan dari teman sekelas",
+                    "Pasti dan nyata sesuai peraturan negara (denda / kurungan)",
+                    "Hanya dirasakan kelak di kehidupan akhirat"
+                ],
+                ans: 2,
+                explanation: "Norma hukum dibuat oleh lembaga resmi negara (DPR/Pemerintah) sehingga sanksinya bersifat nyata dan pasti."
+            },
+            {
+                q: "Siswa SMP dilarang membawa sepeda motor ke sekolah karena belum berusia 17 tahun dan belum memiliki SIM. Peraturan ini dibuat untuk mematuhi...",
+                options: ["Norma Agama", "Norma Kesusilaan", "Norma Hukum", "Norma Adat"],
+                ans: 2,
+                explanation: "UU No. 22 Tahun 2009 tentang Lalu Lintas merupakan produk norma hukum demi keselamatan bersama di jalan."
+            },
+            {
+                q: "Di grup WhatsApp kelas, terdapat teman yang menyebarkan berita bohong (hoaks) tentang salah satu siswa. Sikap Pelajar Pancasila yang bijak adalah...",
+                options: [
+                    "Langsung meneruskan berita tersebut ke grup lain",
+                    "Menasihati secara santun dan mengingatkan untuk verifikasi kebenaran",
+                    "Mengejek teman yang menjadi korban hoaks",
+                    "Meninggalkan grup tanpa memberikan penjelasan"
+                ],
+                ans: 1,
+                explanation: "Etika berinternet (cyber-ethics) membutuhkan kesantunan, klarifikasi (tabayyun), dan pengamalan Sila ke-2 & ke-3."
+            },
+            {
+                q: "Saat pemilihan ketua OSIS di sekolah, terdapat dua calon dari suku yang berbeda. Tindakan yang mencerminkan Sila ke-4 Pancasila adalah...",
+                options: [
+                    "Memilih calon hanya karena berasal dari suku yang sama",
+                    "Menolak ikut serta dalam pemungutan suara",
+                    "Memilih berdasarkan visi, misi, dan kemampuan kepemimpinan tanpa membedakan suku",
+                    "Mengganggu jalannya proses pemungutan suara"
+                ],
+                ans: 2,
+                explanation: "Sila ke-4 menekankan musyawarah dan demokrasi rasional tanpa diskriminasi suku, agama, maupun ras."
+            },
+            {
+                q: "Seorang siswa menemukan dompet berisi uang tunai di koridor sekolah lalu menyerahkannya ke ruang Guru/BK. Dorongan tindakan ini berasal dari...",
+                options: ["Norma Agama & Kesusilaan", "Hukuman Polisi", "Rasa Takut Dimarahi Teman", "Keinginan Mendapat Hadiah Uang"],
+                ans: 0,
+                explanation: "Kejujuran dan mendengarkan suara hati nurani merupakan inti dari Norma Kesusilaan dan pengamalan Agama."
+            },
+            {
+                q: "Kerja bakti membersihkan lingkungan sekolah secara bersama-sama tanpa membedakan latar belakang merupakan contoh wujud...",
+                options: ["Sifat Individualisme", "Gotong Royong & Sila ke-3", "Tuntutan Hukum Pidana", "Norma Kesopanan Formal"],
+                ans: 1,
+                explanation: "Gotong royong mempererat persatuan Indonesia (Sila ke-3) dan merupakan kepribadian khas bangsa."
+            },
+            {
+                q: "Hierarki atau urutan peraturan perundang-undangan tertinggi di negara Republik Indonesia adalah...",
+                options: [
+                    "Peraturan Daerah (Perda)",
+                    "Peraturan Presiden (Perpres)",
+                    "Undang-Undang Dasar Negara Republik Indonesia Tahun 1945",
+                    "Peraturan Sekolah"
+                ],
+                ans: 2,
+                explanation: "UUD NRI Tahun 1945 merupakan hukum dasar tertulis tertinggi dalam tata urutan peraturan di Indonesia."
+            }
+        ];
+
+        let currentQIndex = 0;
+        let quizScore = 0;
+
+        function startQuizGame() {
+            playSound('click');
+            currentQIndex = 0;
+            quizScore = 0;
+            totalQuestionsAnswered = 0;
+            totalQuestionsCorrect = 0;
+            document.getElementById('menu-screen').classList.add('hidden');
+            const gameArea = document.getElementById('active-game-area');
+            gameArea.classList.remove('hidden');
+            renderQuizQuestion();
+        }
+
+        function renderQuizQuestion() {
+            const qData = quizQuestions[currentQIndex];
+            const gameArea = document.getElementById('active-game-area');
+
+            gameArea.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center bg-indigo-50 p-3 rounded-xl border border-indigo-200">
+                        <span class="text-xs font-bold text-indigo-700 uppercase flex items-center gap-1.5"><i class="fas fa-brain"></i> Cerdas Cermat Pancasila</span>
+                        <span class="text-xs font-bold bg-indigo-600 text-white px-2.5 py-1 rounded-lg">Soal ${currentQIndex + 1} / ${quizQuestions.length}</span>
+                    </div>
+
+                    <div class="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200 shadow-sm">
+                        <h3 class="text-sm sm:text-base font-bold text-gray-800 leading-relaxed">${qData.q}</h3>
+                    </div>
+
+                    <div class="space-y-2 mt-3" id="options-container">
+                        ${qData.options.map((opt, idx) => `
+                            <button onclick="checkQuizAnswer(${idx})" class="w-full text-left p-3.5 rounded-xl border-2 border-gray-200 hover:border-indigo-500 hover:bg-indigo-50 font-semibold text-xs sm:text-sm transition flex items-center justify-between group">
+                                <span><strong class="text-indigo-600 mr-2">${String.fromCharCode(65 + idx)}.</strong> ${opt}</span>
+                                <i class="fas fa-chevron-right text-gray-300 group-hover:text-indigo-500 text-xs"></i>
+                            </button>
+                        `).join('')}
+                    </div>
+
+                    <div id="quiz-feedback" class="hidden p-4 rounded-xl text-xs sm:text-sm font-medium"></div>
+
+                    <div class="flex justify-end mt-4">
+                        <button id="next-q-btn" onclick="nextQuizQuestion()" class="hidden btn-bounce bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-2.5 rounded-xl text-xs sm:text-sm shadow">
+                            Lanjut <i class="fas fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            startTimer(20, () => {
+                checkQuizAnswer(-1); // Waktu habis
+            });
+        }
+
+        function checkQuizAnswer(selectedIdx) {
+            stopTimer();
+            totalQuestionsAnswered++;
+            const qData = quizQuestions[currentQIndex];
+            const buttons = document.querySelectorAll('#options-container button');
+            const feedback = document.getElementById('quiz-feedback');
+            const nextBtn = document.getElementById('next-q-btn');
+
+            buttons.forEach((btn) => btn.disabled = true);
+
+            if (selectedIdx === qData.ans) {
+                playSound('correct');
+                totalQuestionsCorrect++;
+                updateStreak(true);
+                buttons[selectedIdx].classList.remove('border-gray-200');
+                buttons[selectedIdx].classList.add('border-emerald-500', 'bg-emerald-50', 'text-emerald-900');
+                feedback.className = "p-4 rounded-xl text-xs sm:text-sm font-medium bg-emerald-100 text-emerald-900 border border-emerald-300";
+                feedback.innerHTML = `<i class="fas fa-circle-check text-emerald-600 text-base mr-1.5"></i><strong>Jawaban Benar! (+20 Skor)</strong><br>${qData.explanation}`;
+                quizScore += 20;
+                updateScore(20);
+            } else {
+                playSound('wrong');
+                updateStreak(false);
+                if (selectedIdx >= 0) {
+                    buttons[selectedIdx].classList.add('border-red-500', 'bg-red-50', 'text-red-900');
+                }
+                buttons[qData.ans].classList.add('border-emerald-500', 'bg-emerald-50', 'text-emerald-900');
+                feedback.className = "p-4 rounded-xl text-xs sm:text-sm font-medium bg-red-100 text-red-900 border border-red-300";
+                feedback.innerHTML = `<i class="fas fa-circle-xmark text-red-600 text-base mr-1.5"></i><strong>${selectedIdx === -1 ? 'Waktu Habis!' : 'Kurang Tepat!'}</strong><br>${qData.explanation}`;
+            }
+
+            feedback.classList.remove('hidden');
+            nextBtn.classList.remove('hidden');
+        }
+
+        function nextQuizQuestion() {
+            playSound('click');
+            currentQIndex++;
+            if (currentQIndex < quizQuestions.length) {
+                renderQuizQuestion();
+            } else {
+                showResult(quizScore, "Cerdas Cermat Pancasila", `Kamu berhasil menyelesaikan kuis 10 soal HOTS dengan skor total ${quizScore} poin.`);
+            }
+        }
+
+        /* ==========================================================
+           GAME 2: DETEKTIF NORMA (KLASIFIKASI KASUS NORMA - 10 KASUS)
+        ========================================================== */
+        const sortingItems = [
+            { text: "Beribadah dan berdoa dengan khusyuk sesuai agama dan keyakinan masing-masing", category: "Agama" },
+            { text: "Menyesal dan meminta maaf dari hati terdalam setelah tidak sengaja merusak barang teman", category: "Kesusilaan" },
+            { text: "Mengucapkan salam dan berpamitan dengan mencium tangan orang tua sebelum berangkat sekolah", category: "Kesopanan" },
+            { text: "Memakai helm SNI dan memiliki SIM saat mengendarai sepeda motor di jalan raya", category: "Hukum" },
+            { text: "Tidak berbohong saat menjawab pertanyaan guru karena mendengar suara hati nurani", category: "Kesusilaan" },
+            { text: "Membayar pajak kendaraan tepat waktu dan mematuhi rambu lalu lintas", category: "Hukum" },
+            { text: "Tidak menyela atau memotong pembicaraan orang tua atau guru yang sedang menjelaskan", category: "Kesopanan" },
+            { text: "Menjauhi perbuatan tercela dan rajin bersedekah membantu sesama", category: "Agama" },
+            { text: "Membawa kelengkapan dokumen surat kendaraan (STNK) saat berkendara", category: "Hukum" },
+            { text: "Menundukkan badan dan mengucap 'Permisi' saat berjalan di depan orang yang lebih tua", category: "Kesopanan" }
+        ];
+
+        let sortingIndex = 0;
+        let sortingScore = 0;
+
+        function startSortingGame() {
+            playSound('click');
+            sortingIndex = 0;
+            sortingScore = 0;
+            totalQuestionsAnswered = 0;
+            totalQuestionsCorrect = 0;
+            document.getElementById('menu-screen').classList.add('hidden');
+            const gameArea = document.getElementById('active-game-area');
+            gameArea.classList.remove('hidden');
+            renderSortingItem();
+        }
+
+        function renderSortingItem() {
+            if (sortingIndex >= sortingItems.length) {
+                showResult(sortingScore, "Detektif Norma", `Kamu berhasil mengidentifikasi 10 kasus norma masyarakat dengan skor ${sortingScore} poin.`);
+                return;
+            }
+
+            const item = sortingItems[sortingIndex];
+            const gameArea = document.getElementById('active-game-area');
+
+            gameArea.innerHTML = `
+                <div class="space-y-4 text-center">
+                    <div class="flex justify-between items-center bg-teal-50 p-3 rounded-xl border border-teal-200 text-left">
+                        <span class="text-xs font-bold text-teal-800 uppercase flex items-center gap-1.5"><i class="fas fa-user-shield"></i> Detektif Norma</span>
+                        <span class="text-xs font-bold bg-teal-600 text-white px-2.5 py-1 rounded-lg">Kasus ${sortingIndex + 1} / ${sortingItems.length}</span>
+                    </div>
+
+                    <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Analisis Kasus Perilaku Berikut:</p>
+
+                    <div class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-6 rounded-2xl shadow-md border-2 border-emerald-400 my-2">
+                        <i class="fas fa-magnifying-glass text-3xl mb-3 text-yellow-300"></i>
+                        <p class="text-sm sm:text-base font-bold leading-relaxed">"${item.text}"</p>
+                    </div>
+
+                    <p class="text-xs text-gray-600 font-medium">Klasifikasikan tindakan di atas ke dalam jenis norma yang paling tepat:</p>
+
+                    <div class="grid grid-cols-2 gap-3 mt-2">
+                        <button onclick="checkSorting('Agama')" class="btn-bounce bg-purple-600 hover:bg-purple-700 text-white p-3.5 rounded-xl font-bold text-xs sm:text-sm shadow border-b-4 border-purple-900 flex items-center justify-center gap-1.5">
+                            <i class="fas fa-mosque"></i> Norma Agama
+                        </button>
+                        <button onclick="checkSorting('Kesusilaan')" class="btn-bounce bg-pink-600 hover:bg-pink-700 text-white p-3.5 rounded-xl font-bold text-xs sm:text-sm shadow border-b-4 border-pink-900 flex items-center justify-center gap-1.5">
+                            <i class="fas fa-heart"></i> Norma Kesusilaan
+                        </button>
+                        <button onclick="checkSorting('Kesopanan')" class="btn-bounce bg-amber-600 hover:bg-amber-700 text-white p-3.5 rounded-xl font-bold text-xs sm:text-sm shadow border-b-4 border-amber-900 flex items-center justify-center gap-1.5">
+                            <i class="fas fa-hands-praying"></i> Norma Kesopanan
+                        </button>
+                        <button onclick="checkSorting('Hukum')" class="btn-bounce bg-blue-600 hover:bg-blue-700 text-white p-3.5 rounded-xl font-bold text-xs sm:text-sm shadow border-b-4 border-blue-900 flex items-center justify-center gap-1.5">
+                            <i class="fas fa-gavel"></i> Norma Hukum
+                        </button>
+                    </div>
+
+                    <div id="sorting-feedback" class="hidden p-3.5 rounded-xl text-xs sm:text-sm font-medium mt-3"></div>
+                </div>
+            `;
+
+            startTimer(15, () => {
+                checkSorting('Waktu Habis');
+            });
+        }
+
+        function checkSorting(selectedCategory) {
+            stopTimer();
+            totalQuestionsAnswered++;
+            const item = sortingItems[sortingIndex];
+            const feedback = document.getElementById('sorting-feedback');
+
+            if (selectedCategory === item.category) {
+                playSound('correct');
+                totalQuestionsCorrect++;
+                updateStreak(true);
+                feedback.className = "p-3.5 rounded-xl text-xs sm:text-sm font-medium mt-3 bg-emerald-100 text-emerald-900 border border-emerald-300";
+                feedback.innerHTML = `<i class="fas fa-circle-check text-emerald-600 mr-1.5"></i> Tepat Sekali! Perilaku tersebut diatur dalam <strong>Norma ${item.category}</strong>. (+20 Skor)`;
+                sortingScore += 20;
+                updateScore(20);
+            } else {
+                playSound('wrong');
+                updateStreak(false);
+                feedback.className = "p-3.5 rounded-xl text-xs sm:text-sm font-medium mt-3 bg-red-100 text-red-900 border border-red-300";
+                feedback.innerHTML = `<i class="fas fa-circle-xmark text-red-600 mr-1.5"></i> ${selectedCategory === 'Waktu Habis' ? 'Waktu habis!' : 'Kurang tepat!'} Perilaku tersebut merupakan contoh <strong>Norma ${item.category}</strong>.`;
+            }
+
+            feedback.classList.remove('hidden');
+
+            setTimeout(() => {
+                sortingIndex++;
+                renderSortingItem();
+            }, 1600);
+        }
+
+        /* ==========================================================
+           GAME 3: COCOK SILA PANCASILA (SILAS & APPLICATION MATCH)
+        ========================================================== */
+        const silaData = [
+            { sila: 1, symbol: "Bintang Gold", icon: "fa-star", text: "Ketuhanan Yang Maha Esa", example: "Toleransi dan saling menghormati antarumat beragama di sekolah" },
+            { sila: 2, symbol: "Rantai Emas", icon: "fa-link", text: "Kemanusiaan yang Adil dan Beradab", example: "Membantu korban bencana alam tanpa membeda-bedakan latar belakang" },
+            { sila: 3, symbol: "Pohon Beringin", icon: "fa-tree", text: "Persatuan Indonesia", example: "Bangga menggunakan produk buatan Indonesia & melestarikan budaya" },
+            { sila: 4, symbol: "Kepala Banteng", icon: "fa-cow", text: "Kerakyatan yang Dipimpin...", example: "Musyawarah mufakat untuk pemilihan ketua OSIS atau kelompok belajar" },
+            { sila: 5, symbol: "Padi dan Kapas", icon: "fa-wheat-awn", text: "Keadilan Sosial bagi Seluruh...", example: "Suka bekerja keras, bersikap hemat, dan gotong royong bersama" }
+        ];
+
+        let selectedSilaNum = null;
+        let matchScore = 0;
+
+        function startSilaMatchGame() {
+            playSound('click');
+            matchScore = 0;
+            selectedSilaNum = null;
+            totalQuestionsAnswered = 5;
+            totalQuestionsCorrect = 0;
+            document.getElementById('menu-screen').classList.add('hidden');
+            const gameArea = document.getElementById('active-game-area');
+            gameArea.classList.remove('hidden');
+
+            const shuffledExamples = [...silaData].sort(() => Math.random() - 0.5);
+
+            gameArea.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center bg-amber-50 p-3 rounded-xl border border-amber-200">
+                        <span class="text-xs font-bold text-amber-800 uppercase flex items-center gap-1.5"><i class="fas fa-shapes"></i> Cocok Sila Pancasila</span>
+                        <span id="match-status" class="text-xs font-bold bg-amber-600 text-white px-2.5 py-1 rounded-lg">Pilih Sila Terlebih Dahulu</span>
+                    </div>
+
+                    <p class="text-xs text-gray-600">Klik <strong>Sila Pancasila</strong> di sebelah kiri, lalu klik <strong>Contoh Pengamalan</strong> yang sesuai di sebelah kanan!</p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 my-2">
+                        <!-- Kolom Sila -->
+                        <div class="space-y-2">
+                            <p class="text-xs font-bold text-gray-400 uppercase">1. Pilih Sila Pancasila</p>
+                            ${silaData.map(item => `
+                                <button id="sila-btn-${item.sila}" onclick="selectSila(${item.sila})" class="sila-select-btn w-full text-left p-2.5 rounded-xl border-2 border-gray-200 hover:border-amber-500 bg-white font-bold text-xs sm:text-sm flex items-center gap-2.5 transition shadow-sm">
+                                    <span class="w-7 h-7 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs font-black shadow-sm">${item.sila}</span>
+                                    <span class="text-gray-800"><i class="fas ${item.icon} text-amber-600 mr-1"></i> ${item.text.substring(0, 22)}...</span>
+                                </button>
+                            `).join('')}
+                        </div>
+
+                        <!-- Kolom Contoh Penerapan -->
+                        <div class="space-y-2">
+                            <p class="text-xs font-bold text-gray-400 uppercase">2. Pilih Pengamalan Yang Cocok</p>
+                            ${shuffledExamples.map((item) => `
+                                <button id="example-btn-${item.sila}" onclick="matchExample(${item.sila})" class="example-select-btn w-full text-left p-2.5 rounded-xl border-2 border-gray-200 hover:border-orange-500 bg-white font-medium text-xs flex items-center justify-between transition shadow-sm">
+                                    <span class="leading-snug text-gray-700">${item.example}</span>
+                                    <i class="fas fa-link text-gray-300 ml-1"></i>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div id="match-feedback" class="hidden p-3 rounded-xl text-xs sm:text-sm font-medium"></div>
+
+                    <div class="flex justify-end">
+                        <button onclick="finishSilaGame()" class="btn-bounce bg-amber-600 hover:bg-amber-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs sm:text-sm shadow">
+                            Selesai & Lihat Laporan <i class="fas fa-check-double ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function selectSila(silaNum) {
+            playSound('click');
+            selectedSilaNum = silaNum;
+            document.querySelectorAll('.sila-select-btn').forEach(btn => {
+                if (!btn.disabled) btn.classList.remove('border-amber-500', 'bg-amber-50');
+            });
+            const selectedBtn = document.getElementById(`sila-btn-${silaNum}`);
+            selectedBtn.classList.add('border-amber-500', 'bg-amber-50');
+            
+            document.getElementById('match-status').innerText = `Sila ke-${silaNum} dipilih. Klik penerapannya!`;
+        }
+
+        function matchExample(exampleSilaNum) {
+            const feedback = document.getElementById('match-feedback');
+            
+            if (!selectedSilaNum) {
+                playSound('wrong');
+                feedback.className = "p-3 rounded-xl text-xs font-medium bg-amber-100 text-amber-900 border border-amber-300";
+                feedback.innerText = "⚠️ Silakan pilih nomor Sila di kolom kiri terlebih dahulu!";
+                feedback.classList.remove('hidden');
+                return;
+            }
+
+            if (selectedSilaNum === exampleSilaNum) {
+                playSound('correct');
+                totalQuestionsCorrect++;
+                updateStreak(true);
+                feedback.className = "p-3 rounded-xl text-xs font-medium bg-emerald-100 text-emerald-900 border border-emerald-300";
+                feedback.innerHTML = `<i class="fas fa-circle-check text-emerald-600 mr-1"></i> Cocok! Sila ke-${selectedSilaNum} sesuai dengan penerapan tersebut. (+20 Skor)`;
+                
+                const silaBtn = document.getElementById(`sila-btn-${selectedSilaNum}`);
+                silaBtn.disabled = true;
+                silaBtn.classList.add('opacity-40', 'bg-gray-100');
+
+                const exBtn = document.getElementById(`example-btn-${exampleSilaNum}`);
+                exBtn.disabled = true;
+                exBtn.classList.add('opacity-40', 'bg-gray-100', 'border-emerald-500');
+
+                matchScore += 20;
+                updateScore(20);
+                selectedSilaNum = null;
+                document.getElementById('match-status').innerText = "Berhasil dipasangkan! Pilih Sila berikutnya.";
+            } else {
+                playSound('wrong');
+                updateStreak(false);
+                feedback.className = "p-3 rounded-xl text-xs font-medium bg-red-100 text-red-900 border border-red-300";
+                feedback.innerText = "❌ Pasangan belum tepat. Analisis kembali keterkaitan sila dan penerapannya!";
+            }
+
+            feedback.classList.remove('hidden');
+        }
+
+        function finishSilaGame() {
+            showResult(matchScore, "Cocok Sila Pancasila", `Kamu telah menyelesaikan pencocokan sila Pancasila dengan skor ${matchScore} poin.`);
+        }
+    </script>
+</body>
+</html>
